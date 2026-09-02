@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Brújula Interior interactiva basada en ocho dimensiones del desarrollo humano.">
+<title>Brújula Interior IDG</title>
+<style>
+:root{
+  --crema:#fffaf4;--arena:#dcc29d;--rosa:#eb9ab0;--coral:#ee5949;
+  --naranja:#ff7e29;--borgona:#7b283f;--tinta:#33282a;--suave:#6b5b5e;
+  --linea:#e4d6c8;--blanco:#fff;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--tinta);background:linear-gradient(145deg,#fffaf4,#f7ede7);font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+button,textarea{font:inherit}
+.idg-app{width:min(960px,calc(100% - 28px));margin:24px auto;overflow:hidden;background:rgba(255,250,244,.97);border:1px solid #d9c2b5;border-radius:22px;box-shadow:0 14px 36px rgba(73,35,45,.12)}
+.idg-palette{display:flex;width:100%;height:8px}.idg-palette span{width:20%}
+.idg-header{position:relative;padding:30px clamp(20px,5vw,48px) 22px;overflow:hidden;text-align:center}
+.idg-header::before,.idg-header::after{position:absolute;content:"";border-radius:50%;pointer-events:none}
+.idg-header::before{width:190px;height:190px;top:-125px;left:-65px;background:rgba(235,154,176,.2)}
+.idg-header::after{width:220px;height:220px;right:-120px;bottom:-155px;background:rgba(255,126,41,.13)}
+.idg-badge{position:relative;display:inline-block;margin-bottom:9px;padding:6px 12px;color:#b5442c;border:1px solid var(--naranja);border-radius:999px;font-size:11px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase}
+.idg-header h1{position:relative;margin:0;color:var(--borgona);font-size:clamp(30px,5vw,43px);line-height:1.1;letter-spacing:-.8px}
+.idg-header p{position:relative;max-width:720px;margin:11px auto 0;color:var(--suave);font-size:15px;line-height:1.65}
+.idg-rule{position:relative;width:56px;height:4px;margin:14px auto 0;background:var(--naranja);border-radius:999px}
+.idg-progress-area{padding:0 clamp(18px,4vw,34px) 7px}
+.idg-progress-meta{display:flex;justify-content:space-between;gap:15px;margin-bottom:6px;color:var(--suave);font-size:12px;font-weight:800}
+.idg-progress-track{height:8px;overflow:hidden;background:#eee1d7;border-radius:999px}
+.idg-progress-fill{width:0;height:100%;background:linear-gradient(90deg,var(--rosa),var(--coral),var(--naranja));border-radius:inherit;transition:width .35s ease}
+.idg-stage{display:grid;grid-template-columns:minmax(330px,420px) minmax(0,1fr);align-items:center;gap:clamp(22px,4vw,46px);padding:22px clamp(18px,4vw,34px) 32px}
+.compass-shell{position:relative;width:100%;aspect-ratio:1;margin:auto;border-radius:50%;background:radial-gradient(circle at 50% 50%,#fffdf9 0 32%,#faeee7 33% 48%,#fffaf4 49% 65%,#f8ebe5 66% 100%);border:1px solid #dbc6ba;box-shadow:inset 0 0 35px rgba(123,40,63,.07),0 13px 28px rgba(73,35,45,.12)}
+.ring{position:absolute;inset:50% auto auto 50%;border:1px solid rgba(123,40,63,.18);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}.ring.one{width:80%;height:80%}.ring.two{width:58%;height:58%;border-style:dashed}.ring.three{width:35%;height:35%}
+.axis{position:absolute;top:50%;left:50%;width:78%;height:1px;background:linear-gradient(90deg,transparent,rgba(123,40,63,.17),transparent);transform:translate(-50%,-50%);pointer-events:none}.axis.diagonal-a{transform:translate(-50%,-50%) rotate(45deg)}.axis.diagonal-b{transform:translate(-50%,-50%) rotate(-45deg)}.axis.vertical{transform:translate(-50%,-50%) rotate(90deg)}
+.needle{position:absolute;z-index:3;top:50%;left:50%;width:8px;height:28%;background:linear-gradient(180deg,var(--borgona),var(--coral));border-radius:999px 999px 4px 4px;box-shadow:0 3px 8px rgba(123,40,63,.23);transform:translate(-50%,-100%) rotate(0deg);transform-origin:50% 100%;transition:transform .7s cubic-bezier(.2,.75,.25,1)}
+.needle::before{position:absolute;top:-10px;left:50%;content:"";border-right:8px solid transparent;border-bottom:17px solid var(--borgona);border-left:8px solid transparent;transform:translateX(-50%)}
+.compass-core{position:absolute;z-index:5;top:50%;left:50%;display:grid;width:104px;height:104px;place-items:center;padding:10px;color:var(--borgona);background:linear-gradient(145deg,#f9dfe1,#fff);border:1px solid #e8c5ca;border-radius:50%;box-shadow:0 7px 19px rgba(123,40,63,.16),inset 0 0 15px rgba(255,255,255,.95);text-align:center;transform:translate(-50%,-50%)}
+.compass-core span{display:block;color:var(--suave);font-size:11px;font-weight:700}.compass-core strong{display:block;font-size:19px;line-height:1.15}
+.direction{position:absolute;z-index:6;display:grid;width:54px;height:54px;place-items:center;padding:0;color:var(--borgona);background:#fffaf4;border:2px solid #d9c2b5;border-radius:50%;box-shadow:0 6px 14px rgba(73,35,45,.13);font-size:12px;font-weight:900;cursor:pointer;transition:transform .2s ease,background .2s ease,color .2s ease,box-shadow .2s ease,border-color .2s ease}
+.direction:hover{box-shadow:0 10px 20px rgba(73,35,45,.19)}
+.direction.active{color:#fff;background:var(--borgona);border-color:var(--borgona);box-shadow:0 0 0 5px rgba(235,154,176,.25),0 10px 20px rgba(73,35,45,.2)}
+.direction.visited:not(.active)::after{position:absolute;right:-2px;bottom:-2px;display:grid;width:19px;height:19px;place-items:center;color:#fff;background:var(--coral);border:2px solid var(--crema);border-radius:50%;content:"✓";font-size:10px}
+.direction:focus-visible,.idg-button:focus-visible,textarea:focus-visible{outline:3px solid rgba(255,126,41,.42);outline-offset:3px}
+.north{top:3%;left:50%;transform:translateX(-50%)}.north:hover,.north.active{transform:translateX(-50%) scale(1.07)}
+.ne{top:15%;right:15%}.ne:hover,.ne.active,.se:hover,.se.active,.sw:hover,.sw.active,.nw:hover,.nw.active{transform:scale(1.07)}
+.east{top:50%;right:3%;transform:translateY(-50%)}.east:hover,.east.active{transform:translateY(-50%) scale(1.07)}
+.se{right:15%;bottom:15%}.south{bottom:3%;left:50%;transform:translateX(-50%)}.south:hover,.south.active{transform:translateX(-50%) scale(1.07)}
+.sw{bottom:15%;left:15%}.west{top:50%;left:3%;transform:translateY(-50%)}.west:hover,.west.active{transform:translateY(-50%) scale(1.07)}.nw{top:15%;left:15%}
+.reflection-panel{min-width:0;padding:24px;background:#fffdf9;border:1px solid var(--linea);border-left:6px solid var(--borgona);border-radius:17px;box-shadow:0 8px 20px rgba(73,35,45,.07)}
+.direction-label{display:inline-block;margin-bottom:8px;padding:5px 10px;color:#b5442c;background:#fff5ed;border:1px solid #edc8b9;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.8px;text-transform:uppercase}
+.reflection-panel h2{margin:0;color:var(--borgona);font-size:clamp(22px,3vw,28px);line-height:1.25}
+.prompt{margin:11px 0 0;color:var(--tinta);font-size:16px;font-weight:700;line-height:1.65}
+.guidance{margin:10px 0 0;color:var(--suave);font-size:13px;line-height:1.55}
+.notes-wrap{margin-top:17px}.notes-wrap label{display:block;margin-bottom:7px;color:var(--borgona);font-size:12px;font-weight:800}
+textarea{width:100%;min-height:105px;padding:12px 13px;resize:vertical;color:var(--tinta);background:#fffaf4;border:1px solid #d9c2b5;border-radius:11px;font-size:14px;line-height:1.5}
+textarea::placeholder{color:#9a898a}.save-status{min-height:18px;margin:6px 0 0;color:#876e72;font-size:11px}
+.panel-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}
+.idg-button{min-height:42px;padding:9px 15px;border-radius:999px;font-size:13px;font-weight:800;cursor:pointer;transition:.2s ease}
+.idg-button.primary{color:#fff;background:var(--borgona);border:2px solid var(--borgona);box-shadow:0 5px 12px rgba(123,40,63,.18)}.idg-button.primary:hover{background:#682035;transform:translateY(-1px)}
+.idg-button.secondary{color:var(--borgona);background:transparent;border:2px solid #d6b0b8}.idg-button.secondary:hover{background:#fff1f2;transform:translateY(-1px)}
+.completion{display:none;margin:0 clamp(18px,4vw,34px) 30px;padding:17px 20px;color:var(--borgona);background:#fff5ed;border:1px solid #edc8b9;border-left:6px solid var(--naranja);border-radius:14px;font-size:14px;font-weight:700;line-height:1.55;text-align:center}.completion.active{display:block}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:760px){.idg-app{width:min(100% - 18px,960px);margin:10px auto;border-radius:16px}.idg-header{padding:25px 17px 19px}.idg-stage{grid-template-columns:1fr;padding:18px 14px 24px}.compass-shell{max-width:390px}.reflection-panel{padding:20px}.idg-progress-area{padding-inline:14px}}
+@media(max-width:420px){.compass-shell{max-width:340px}.direction{width:46px;height:46px;font-size:11px}.compass-core{width:88px;height:88px}.compass-core strong{font-size:17px}.ne{top:14%;right:13%}.nw{top:14%;left:13%}.se{right:13%;bottom:14%}.sw{bottom:14%;left:13%}.panel-actions{display:grid}.idg-button{width:100%}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main class="idg-app" id="idgCompassApp">
+  <div class="idg-palette" aria-hidden="true"><span style="background:#dcc29d"></span><span style="background:#eb9ab0"></span><span style="background:#ee5949"></span><span style="background:#ff7e29"></span><span style="background:#7b283f"></span></div>
+  <header class="idg-header">
+    <span class="idg-badge">Inner Development Goals</span>
+    <h1>Brújula Interior</h1>
+    <p>Detente, elige una dirección y explora ocho dimensiones de tu desarrollo humano. No busques respuestas perfectas: permite que cada pregunta te acerque a una respuesta auténtica.</p>
+    <div class="idg-rule" aria-hidden="true"></div>
+  </header>
+
+  <div class="idg-progress-area">
+    <div class="idg-progress-meta"><span>Recorrido de exploración</span><span id="visitedCount">0 de 8 dimensiones</span></div>
+    <div class="idg-progress-track" role="progressbar" aria-label="Dimensiones exploradas" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0"><div class="idg-progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <section class="idg-stage">
+    <div class="compass-shell" role="group" aria-label="Ocho direcciones de la brújula interior">
+      <span class="ring one"></span><span class="ring two"></span><span class="ring three"></span>
+      <span class="axis"></span><span class="axis vertical"></span><span class="axis diagonal-a"></span><span class="axis diagonal-b"></span>
+      <div class="needle" id="needle" aria-hidden="true"></div>
+      <div class="compass-core" aria-hidden="true"><div><span>Regresa a</span><strong>tu centro</strong></div></div>
+      <button class="direction north" type="button" data-key="north" aria-label="Norte, propósito">N</button>
+      <button class="direction ne" type="button" data-key="ne" aria-label="Noreste, crecimiento">NE</button>
+      <button class="direction east" type="button" data-key="east" aria-label="Este, nuevos comienzos">E</button>
+      <button class="direction se" type="button" data-key="se" aria-label="Sureste, coraje y acción">SE</button>
+      <button class="direction south" type="button" data-key="south" aria-label="Sur, interioridad y emociones">S</button>
+      <button class="direction sw" type="button" data-key="sw" aria-label="Suroeste, relaciones">SO</button>
+      <button class="direction west" type="button" data-key="west" aria-label="Oeste, aprendizaje">O</button>
+      <button class="direction nw" type="button" data-key="nw" aria-label="Noroeste, integración y sabiduría">NO</button>
+    </div>
+
+    <article class="reflection-panel" aria-live="polite">
+      <span class="direction-label" id="directionLabel">Punto de partida</span>
+      <h2 id="directionTitle">Explora tu brújula interior</h2>
+      <p class="prompt" id="directionPrompt">Selecciona una dirección para descubrir una pregunta de reflexión.</p>
+      <p class="guidance" id="directionGuidance">Puedes recorrer las dimensiones en cualquier orden. Las marcas te mostrarán cuáles ya exploraste.</p>
+      <div class="notes-wrap" id="notesWrap" hidden>
+        <label for="reflectionNotes">Registra lo que emerge de tu reflexión</label>
+        <textarea id="reflectionNotes" maxlength="700" placeholder="Escribe aquí una idea, una emoción o una acción que quieras recordar…"></textarea>
+        <p class="save-status" id="saveStatus">Tu reflexión se conserva en este navegador.</p>
+      </div>
+      <div class="panel-actions">
+        <button class="idg-button primary" id="randomButton" type="button">Explorar una dirección</button>
+        <button class="idg-button secondary" id="resetButton" type="button">↻ Reiniciar recorrido</button>
+      </div>
+    </article>
+  </section>
+  <div class="completion" id="completionMessage">Has recorrido las ocho dimensiones. Observa ahora el conjunto: ¿qué patrón, llamado o posibilidad aparece cuando conectas todas tus respuestas?</div>
+  <div class="sr-only" id="announcer" aria-live="polite"></div>
+</main>
+
+<script>
+(function(){
+  'use strict';
+  const dimensions={
+    north:{abbr:'Norte',title:'Propósito',angle:0,prompt:'¿Qué es aquello que da sentido a mi vida y que, si lo siguiera con mayor fidelidad, transformaría la manera en que vivo cada día?',guidance:'Reconoce aquello que te orienta incluso cuando el camino no es evidente.'},
+    ne:{abbr:'Noreste',title:'Crecimiento',angle:45,prompt:'¿Qué versión de mí está intentando emerger y qué necesito dejar atrás para permitirle crecer?',guidance:'Piensa en una capacidad, hábito o forma de relacionarte que quiera desarrollarse.'},
+    east:{abbr:'Este',title:'Nuevos comienzos',angle:90,prompt:'Si hoy tuviera el valor de comenzar de nuevo en aquello que más importa, ¿cuál sería el primer paso que daría?',guidance:'Elige un paso pequeño, concreto y posible que puedas iniciar desde hoy.'},
+    se:{abbr:'Sureste',title:'Coraje y acción',angle:135,prompt:'¿Qué decisión estoy evitando tomar por miedo, aunque en el fondo sé que es necesaria para mi crecimiento?',guidance:'Observa el miedo sin juzgarlo y distingue qué acción coherente te está invitando a realizar.'},
+    south:{abbr:'Sur',title:'Interioridad y emociones',angle:180,prompt:'¿Qué parte de mí necesita ser escuchada, comprendida o aceptada en este momento de mi vida?',guidance:'Nombra lo que sientes y pregúntate qué necesidad intenta comunicar esa emoción.'},
+    sw:{abbr:'Suroeste',title:'Relaciones',angle:225,prompt:'¿Qué relación merece hoy una versión más auténtica, consciente y generosa de mí mismo?',guidance:'Considera una conversación, un límite o un gesto de cuidado que pueda fortalecer ese vínculo.'},
+    west:{abbr:'Oeste',title:'Aprendizaje',angle:270,prompt:'Mirando el camino recorrido, ¿qué experiencia ha sido mi mayor maestra y qué me está enseñando sobre quién soy?',guidance:'Recupera una experiencia significativa y transforma su enseñanza en una idea para tu presente.'},
+    nw:{abbr:'Noroeste',title:'Integración y sabiduría',angle:315,prompt:'Si mis decisiones reflejaran plenamente mis valores más profundos, ¿qué cambiaría hoy en mi manera de vivir?',guidance:'Busca coherencia entre lo que valoras, lo que decides y la forma en que actúas.'}
+  };
+  const keys=Object.keys(dimensions);
+  const buttons=Array.from(document.querySelectorAll('.direction'));
+  const needle=document.getElementById('needle');
+  const progress=document.querySelector('.idg-progress-track');
+  const notes=document.getElementById('reflectionNotes');
+  const storageKey='idg-compass-reflections-v2';
+  let activeKey=null;
+  let state={visited:[],notes:{}};
+
+  try{const saved=JSON.parse(localStorage.getItem(storageKey));if(saved&&Array.isArray(saved.visited)&&saved.notes)state=saved}catch(error){}
+
+  function persist(){try{localStorage.setItem(storageKey,JSON.stringify(state));document.getElementById('saveStatus').textContent='Reflexión guardada en este navegador.'}catch(error){document.getElementById('saveStatus').textContent='La reflexión permanecerá disponible mientras esta página siga abierta.'}}
+  function announce(message){document.getElementById('announcer').textContent=message}
+  function updateProgress(){
+    const count=state.visited.length;
+    document.getElementById('visitedCount').textContent=count+' de 8 dimensiones';
+    document.getElementById('progressFill').style.width=(count/8*100)+'%';
+    progress.setAttribute('aria-valuenow',String(count));
+    buttons.forEach(function(button){button.classList.toggle('visited',state.visited.includes(button.dataset.key))});
+    document.getElementById('completionMessage').classList.toggle('active',count===8);
+  }
+  function selectDirection(key,moveFocus){
+    if(activeKey)state.notes[activeKey]=notes.value;
+    activeKey=key;
+    const item=dimensions[key];
+    if(!state.visited.includes(key))state.visited.push(key);
+    buttons.forEach(function(button){const active=button.dataset.key===key;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active))});
+    needle.style.transform='translate(-50%,-100%) rotate('+item.angle+'deg)';
+    document.getElementById('directionLabel').textContent=item.abbr;
+    document.getElementById('directionTitle').textContent=item.title;
+    document.getElementById('directionPrompt').textContent=item.prompt;
+    document.getElementById('directionGuidance').textContent=item.guidance;
+    document.getElementById('notesWrap').hidden=false;
+    notes.value=state.notes[key]||'';
+    document.getElementById('randomButton').textContent='Explorar otra dirección';
+    updateProgress();persist();
+    announce(item.abbr+', '+item.title+'. '+item.prompt);
+    if(moveFocus){document.querySelector('[data-key="'+key+'"]').focus()}
+  }
+  function randomDirection(){
+    const pending=keys.filter(function(key){return !state.visited.includes(key)});
+    const pool=pending.length?pending:keys.filter(function(key){return key!==activeKey});
+    const key=pool[Math.floor(Math.random()*pool.length)];
+    selectDirection(key,true);
+  }
+  function reset(){
+    state={visited:[],notes:{}};activeKey=null;notes.value='';
+    try{localStorage.removeItem(storageKey)}catch(error){}
+    buttons.forEach(function(button){button.classList.remove('active','visited');button.setAttribute('aria-pressed','false')});
+    needle.style.transform='translate(-50%,-100%) rotate(0deg)';
+    document.getElementById('directionLabel').textContent='Punto de partida';
+    document.getElementById('directionTitle').textContent='Explora tu brújula interior';
+    document.getElementById('directionPrompt').textContent='Selecciona una dirección para descubrir una pregunta de reflexión.';
+    document.getElementById('directionGuidance').textContent='Puedes recorrer las dimensiones en cualquier orden. Las marcas te mostrarán cuáles ya exploraste.';
+    document.getElementById('notesWrap').hidden=true;
+    document.getElementById('randomButton').textContent='Explorar una dirección';
+    updateProgress();announce('El recorrido se ha reiniciado.');
+  }
+  buttons.forEach(function(button){button.setAttribute('aria-pressed','false');button.addEventListener('click',function(){selectDirection(button.dataset.key,false)})});
+  notes.addEventListener('input',function(){if(!activeKey)return;state.notes[activeKey]=notes.value;persist()});
+  document.getElementById('randomButton').addEventListener('click',randomDirection);
+  document.getElementById('resetButton').addEventListener('click',reset);
+  updateProgress();
+  if(state.visited.length){selectDirection(state.visited[state.visited.length-1],false)}
+}());
+</script>
+</body>
+</html>
